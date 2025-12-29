@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Page - Styled</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5; /* Indigo 600 */
+            --primary-light: #818cf8; /* Indigo 400 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1f2937; /* Gray 800 */
+        }
+
+        /* Glass container for content - UPDATED WITH HOVER EFFECTS AND TRANSITION */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.15);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smoother transition */
+        }
+
+        .glass-container:hover {
+            box-shadow: 0 20px 50px rgba(79, 70, 229, 0.25); /* Deeper shadow on hover */
+            transform: translateY(-5px); /* Slight upward lift on hover */
+        }
+
+        /* Primary Button Style with Gradient and Ripple Effect */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Preformatted Code Block Styling */
+        pre {
+            background: #eef2ff; /* Indigo 50 */
+            border: 1px solid var(--primary-light);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Loading/Spinner Animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid rgba(79, 70, 229, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Result Fade-in */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-message {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+    </style>
+</head>
+<body class="p-6 sm:p-10">
+
+<div class="max-w-4xl mx-auto glass-container p-8 rounded-xl shadow-2xl">
+    <h1 class="text-3xl font-extrabold mb-8 pb-4 border-b-2 border-indigo-100 text-indigo-700">
+        Student Management API Tester
+    </h1>
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center space-x-2">
+            <span class="text-indigo-600">1.</span> <span>Test Backend Connection</span>
+        </h2>
+        <button onclick="testConnection()" class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">
+            Test Connection
+        </button>
+        <div id="connectionResult" class="mt-4 text-sm font-medium result-message"></div>
+    </div>
+
+    <hr class="my-6 border-indigo-100">
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center space-x-2">
+            <span class="text-indigo-600">2.</span> <span>Test Admin Login</span>
+        </h2>
+        <button onclick="testLogin()" class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">
+            Login as Admin
+        </button>
+        <div id="loginResult" class="mt-4 text-sm font-medium result-message"></div>
+    </div>
+
+    <hr class="my-6 border-indigo-100">
+
+    <div class="mb-8">
+        <h2 class="text-xl font-bold mb-4 flex items-center space-x-2">
+            <span class="text-indigo-600">3.</span> <span>Test Get Students (Requires Backend)</span>
+        </h2>
+        <button onclick="testGetStudents()" class="btn-primary px-6 py-3 text-white rounded-lg font-semibold">
+            Get All Students
+        </button>
+        <div id="studentsResult" class="mt-4 text-sm font-medium result-message"></div>
+    </div>
+
+    <hr class="my-6 border-indigo-100">
+
+    <div class="mb-4">
+        <h2 class="text-xl font-bold mb-4 flex items-center space-x-2">
+            <span class="text-indigo-600">4.</span> <span>Test Get Fees by ID</span>
+        </h2>
+        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 items-start sm:items-center">
+            <input
+                    type="text"
+                    id="studentId"
+                    placeholder="Enter Student ID (e.g., RA1)"
+                    class="flex-grow px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition"
+            />
+            <button onclick="testGetFees()" class="btn-primary px-6 py-3 text-white rounded-lg font-semibold w-full sm:w-auto">
+                Get Fees
+            </button>
+        </div>
+        <div id="feesResult" class="mt-4 text-sm font-medium result-message"></div>
+    </div>
+
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api/v1';
+
+    // Helper to display loading state
+    function setLoading(elementId, message) {
+        const result = document.getElementById(elementId);
+        result.innerHTML = `
+            <p class="flex items-center space-x-2 text-indigo-600">
+                <span class="spinner"></span> <span>${message}</span>
+            </p>
+        `;
+    }
+
+    // Helper to format success output
+    function setSuccess(elementId, message, data = null) {
+        const result = document.getElementById(elementId);
+        let output = `<p class="success text-green-600 font-semibold result-message">✅ ${message}</p>`;
+        if (data) {
+            output += `<pre class="mt-2 rounded-lg text-xs overflow-auto p-3">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        result.innerHTML = output;
+    }
+
+    // Helper to format error output
+    function setError(elementId, message) {
+        const result = document.getElementById(elementId);
+        result.innerHTML = `<p class="error text-red-600 font-semibold result-message">❌ ${message}</p>`;
+    }
+
+
+    async function testConnection() {
+        setLoading('connectionResult', 'Testing connection...');
+        try {
+            // Using /students endpoint as a simple GET check
+            const response = await fetch(`${API_BASE_URL}/students`);
+            if (response.ok) {
+                setSuccess('connectionResult', 'Backend Connected Successfully!');
+            } else {
+                setError('connectionResult', `Backend returned status: ${response.status}. Server is running but API endpoint may be faulty.`);
+            }
+        } catch (error) {
+            setError('connectionResult', `Connection Failed: ${error.message}. Is the server running at ${API_BASE_URL.replace('/api/v1', '')}?`);
+        }
+    }
+
+    async function testLogin() {
+        setLoading('loginResult', 'Attempting admin login...');
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: 'admin@uni.com', password: '1234' }),
+                credentials: 'include'
+            });
+
+            const data = await response.json().catch(()=>({}));
+
+            if (response.ok) {
+                // Store JWT token for subsequent protected calls (if needed)
+                if (data.token) localStorage.setItem('adminToken', data.token);
+                // Save minimal currentUser if provided
+                if (data.id || data.user) localStorage.setItem('currentUser', JSON.stringify(data.user || data));
+                setSuccess('loginResult', `Login Successful! Role: ${data.role || data.user?.role || 'unknown'}`, data);
+            } else {
+                setError('loginResult', `Login Failed: ${data.message || response.statusText}. Status: ${response.status}`);
+            }
+        } catch (error) {
+            setError('loginResult', `Error during login request: ${error.message}`);
+        }
+    }
+
+    async function testGetStudents() {
+        setLoading('studentsResult', 'Fetching student records...');
+        try {
+            const response = await fetch(`${API_BASE_URL}/students`);
+
+            if (!response.ok) {
+                // Handle cases where the endpoint requires authentication and fails
+                throw new Error(`HTTP Error: ${response.status}. Check login status or backend configuration.`);
+            }
+
+            const data = await response.json();
+            setSuccess('studentsResult', `Found ${Array.isArray(data) ? data.length : '0'} students.`, data);
+        } catch (error) {
+            setError('studentsResult', `Fetch Error: ${error.message}`);
+        }
+    }
+
+    async function testGetFees() {
+        const studentId = document.getElementById('studentId').value.trim() || 'RA1';
+        setLoading('feesResult', `Fetching fees for ${studentId}...`);
+
+        // rupee formatter
+        const rupeeFormatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 });
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/fees/student/${encodeURIComponent(studentId)}`);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    setError('feesResult', `No fee records found for Student ID: ${studentId}. (Status ${response.status})`);
+                    return;
+                }
+                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data) || data.length === 0) {
+                setError('feesResult', `No fee records found for Student ID: ${studentId}.`);
+                return;
+            }
+
+            // compute total pending
+            const totalPending = (data || []).filter(f => f.status !== 'Paid').reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
+            const formattedTotal = rupeeFormatter.format(totalPending);
+
+            setSuccess('feesResult', `Found ${data.length} fee records for ${studentId}. Total pending: ${formattedTotal}`, data);
+        } catch (error) {
+            setError('feesResult', `Fetch Error: ${error.message}`);
+        }
+    }
+</script>
+</body>
+</html>

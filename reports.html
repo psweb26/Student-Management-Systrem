@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Academic Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* BASE STYLES & BACKGROUND */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); /* Flipped gradient for variety */
+            min-height: 100vh;
+        }
+
+        /* NAVIGATION */
+        .nav-link.active {
+            position: relative;
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 2px;
+        }
+
+        /* CARD EFFECTS */
+        .card-shadow {
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-shadow:hover {
+            box-shadow: 0 30px 60px rgba(99, 102, 241, 0.15), 0 0 0 1px rgba(99, 102, 241, 0.1);
+            transform: translateY(-4px);
+        }
+
+        /* GRADES STYLING */
+        .grade-A-plus { background-color: #10b981; } /* Emerald */
+        .grade-A { background-color: #3b82f6; }    /* Blue */
+        .grade-B-plus { background-color: #f59e0b; } /* Amber */
+        .grade-B { background-color: #f97316; }    /* Orange */
+        .grade-C { background-color: #ef4444; }    /* Red */
+        .grade-F { background-color: #374151; }    /* Gray */
+
+        /* Spinner for loading state */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-spinner {
+            border: 4px solid rgba(79, 70, 229, 0.1);
+            border-top-color: #4f46e5;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* PROGRESS BAR ANIMATION */
+        @keyframes fill-bar {
+            from { width: 0; }
+            to { width: var(--progress-width); }
+        }
+        .progress-bar-inner {
+            animation: fill-bar 1.5s ease-out forwards;
+        }
+
+        /* FADE IN EFFECT */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Staggered delay for content sections */
+        .section-1 { animation-delay: 0.1s; }
+        .section-2 { animation-delay: 0.3s; }
+
+        /* Modal helpers (lightweight) */
+        .custom-modal { display: none; }
+        .custom-modal.show { display:flex; }
+    </style>
+</head>
+<body onload="initReportPage()">
+<div id="custom-modal" class="custom-modal fixed inset-0 items-center justify-center bg-gray-900 bg-opacity-75 z-50">
+    <div id="modal-content" class="modal-content bg-white p-6 rounded-xl shadow-2xl w-80 text-center transform scale-95 opacity-0 transition-all">
+        <h3 id="modal-title" class="text-xl font-bold mb-3 text-gray-800"></h3>
+        <p id="modal-message" class="text-gray-600 mb-6"></p>
+        <button id="modal-close-btn" class="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition duration-150 font-semibold">Close</button>
+    </div>
+</div>
+
+<header class="bg-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-5">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l-2 2L4 5l4-4 4 4 2-2v13"></path></svg>
+                </div>
+                <h1 class="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Academic Hub</h1>
+            </div>
+            <div class="flex space-x-6 items-center">
+                <a href="dashboard.html" class="nav-link text-gray-700 hover:text-indigo-600 transition duration-150 px-3 py-2 font-medium">Dashboard</a>
+                <a href="profile.html" class="nav-link text-gray-700 hover:text-indigo-600 transition duration-150 px-3 py-2 font-medium">Profile</a>
+                <a href="reports.html" class="nav-link active text-gray-700 hover:text-indigo-600 transition duration-150 px-3 py-2 font-medium">Reports</a>
+                <a href="index.html" id="logout-link" class="text-red-500 hover:text-red-700 transition duration-150 px-3 py-2 font-semibold hover:bg-red-50 rounded-lg">Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <h2 class="text-4xl font-extrabold text-white mb-8 drop-shadow-md">Semester Grades: Fall 2025</h2>
+
+    <div class="bg-white p-8 rounded-2xl card-shadow mb-10 fade-in section-1">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3 flex items-center">
+            <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            Performance Snapshot
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="text-center p-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg transform hover:scale-[1.02] transition duration-300">
+                <p class="text-sm font-medium text-indigo-200">Semester GPA</p>
+                <p id="snapshot-gpa" class="text-5xl font-extrabold text-white mt-1">N/A</p>
+            </div>
+            <div class="text-center p-5 bg-green-50 rounded-xl shadow-md border-l-4 border-green-500">
+                <p class="text-sm font-medium text-green-700">Credits Earned</p>
+                <p id="snapshot-credits" class="text-4xl font-extrabold text-green-600 mt-1">N/A</p>
+            </div>
+            <div class="text-center p-5 bg-yellow-50 rounded-xl shadow-md border-l-4 border-yellow-500">
+                <p class="text-sm font-medium text-yellow-700">Total Courses</p>
+                <p id="snapshot-courses" class="text-4xl font-extrabold text-yellow-600 mt-1">N/A</p>
+            </div>
+            <div class="p-4 rounded-xl flex flex-col justify-center bg-gray-50 shadow-inner">
+                <p class="text-sm font-medium text-gray-700 mb-2">Degree Completion</p>
+                <div class="h-5 w-full bg-gray-300 rounded-full overflow-hidden">
+                    <div id="degree-progress" class="progress-bar-inner h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg" style="--progress-width: 0%; width: 0%;"></div>
+                </div>
+                <p id="snapshot-degree" class="text-sm font-bold text-indigo-600 mt-2 text-right">0% Complete</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white p-8 rounded-2xl card-shadow overflow-x-auto fade-in section-2">
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3 flex items-center">
+            <svg class="w-6 h-6 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            Semester Grades Breakdown
+        </h3>
+
+        <table id="grades-table" class="min-w-full divide-y divide-gray-200 border border-gray-100 rounded-xl">
+            <thead class="bg-indigo-600 text-white">
+            <tr>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider rounded-tl-xl">Course Code</th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider">Subject</th>
+                <th scope="col" class="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider">Credits</th>
+                <th scope="col" class="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider">Grade</th>
+                <th scope="col" class="px-6 py-4 text-center text-xs font-medium uppercase tracking-wider rounded-tr-xl">Enroll Date</th>
+            </tr>
+            </thead>
+            <tbody id="grades-body" class="divide-y divide-gray-100 bg-white">
+            <tr class="h-24">
+                <td colspan="5" class="text-center text-gray-500">
+                    <div class="flex items-center justify-center space-x-3">
+                        <div class="loading-spinner"></div>
+                        <span>Loading academic records...</span>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api/v1';
+
+    // Map grades to CSS class
+    function getGradeClass(grade) {
+        switch (grade) {
+            case 'A+': return 'grade-A-plus';
+            case 'A': return 'grade-A';
+            case 'B+': return 'grade-B-plus';
+            case 'B': return 'grade-B';
+            case 'C': return 'grade-C';
+            default: return 'grade-F';
+        }
+    }
+
+    // Map grade to points for simple GPA calc
+    function gradeToPoints(grade) {
+        switch (grade) {
+            case 'A+': return 4.0;
+            case 'A': return 4.0;
+            case 'B+': return 3.0;
+            case 'B': return 2.0;
+            case 'C': return 1.0;
+            default: return 0.0;
+        }
+    }
+
+    // Auth helpers
+    function getAuthToken() {
+        return localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+    }
+
+    function showMessage(title, message) {
+        const modal = document.getElementById('custom-modal');
+        const modalContent = document.getElementById('modal-content');
+
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-message').innerText = message;
+
+        modal.classList.add('show');
+        modal.classList.remove('hidden');
+
+        // animate in
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    document.getElementById('modal-close-btn').onclick = function () {
+        const modal = document.getElementById('custom-modal');
+        const modalContent = document.getElementById('modal-content');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.remove('show');
+            modal.classList.add('hidden');
+        }, 200);
+    };
+
+    // init
+    function initReportPage() {
+        // nothing for now
+    }
+
+    // main loader
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fade-in elements
+        document.querySelectorAll('.fade-in').forEach(el => el.style.opacity = 1);
+
+        // Ensure user is logged in
+        const currentUserRaw = localStorage.getItem('currentUser');
+        if (!currentUserRaw) {
+            // redirect to login
+            window.location.href = 'index.html';
+            return;
+        }
+        const currentUser = JSON.parse(currentUserRaw);
+        const studentId = currentUser.id || currentUser.studentId || currentUser.student_id;
+        if (!studentId) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Add logout behavior
+        const logoutLink = document.getElementById('logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            });
+        }
+
+        const gradesBody = document.getElementById('grades-body');
+        gradesBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">
+            <div class="flex items-center justify-center space-x-3">
+                <div class="loading-spinner"></div>
+                <span>Fetching enrollment records...</span>
+            </div>
+        </td></tr>`;
+
+        (async () => {
+            try {
+                const token = getAuthToken();
+                const resp = await fetch(`${API_BASE_URL}/enrollments/student/${encodeURIComponent(studentId)}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (resp.status === 401) {
+                    // not authorized - go to login
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!resp.ok) {
+                    gradesBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-600">Failed to load records. Status: ${resp.status}</td></tr>`;
+                    return;
+                }
+
+                const rows = await resp.json();
+
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    gradesBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No enrollment records found for this student.</td></tr>`;
+                    updateSnapshot([], 0);
+                    return;
+                }
+
+                // Clear body and populate using DOM (avoids inline JS injection issues)
+                gradesBody.innerHTML = '';
+                rows.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-indigo-50 transition duration-100 cursor-pointer';
+
+                    // Course Code
+                    const tdCode = document.createElement('td');
+                    tdCode.className = 'px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900';
+                    tdCode.textContent = r.courseCode ?? r.course_code ?? 'N/A';
+                    tr.appendChild(tdCode);
+
+                    // Course Name
+                    const tdName = document.createElement('td');
+                    tdName.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-600';
+                    tdName.textContent = r.courseName ?? r.course_name ?? 'N/A';
+                    tr.appendChild(tdName);
+
+                    // Credits
+                    const tdCredits = document.createElement('td');
+                    tdCredits.className = 'px-6 py-4 text-center text-sm text-gray-600';
+                    tdCredits.textContent = (r.credits ?? r.courseCredits ?? r.course_credits) ?? 'N/A';
+                    tr.appendChild(tdCredits);
+
+                    // Grade
+                    const tdGrade = document.createElement('td');
+                    tdGrade.className = 'px-6 py-4 text-center';
+                    const spanGrade = document.createElement('span');
+                    const gradeText = r.grade ?? 'N/A';
+                    spanGrade.textContent = gradeText;
+                    spanGrade.className = `px-3 py-1 text-xs font-bold rounded-full text-white ${getGradeClass(gradeText)} shadow-md`;
+                    tdGrade.appendChild(spanGrade);
+                    tr.appendChild(tdGrade);
+
+                    // Enrollment date
+                    const tdDate = document.createElement('td');
+                    tdDate.className = 'px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600';
+                    tdDate.textContent = r.enrollmentDate ? new Date(r.enrollmentDate).toLocaleDateString() : (r.enrollment_date ? new Date(r.enrollment_date).toLocaleDateString() : 'N/A');
+                    tr.appendChild(tdDate);
+
+                    // add click to show quick details in modal
+                    tr.addEventListener('click', () => {
+                        const msg = `Grade: ${gradeText ?? 'N/A'}. Credits: ${tdCredits.textContent}.`;
+                        showMessage(r.courseName ?? r.course_name ?? 'Course details', msg);
+                    });
+
+                    gradesBody.appendChild(tr);
+                });
+
+                // Update performance snapshot from rows
+                updateSnapshot(rows, /* creditsRequiredForDegree (optional) */ 120);
+
+            } catch (err) {
+                console.error('Failed to load reports', err);
+                gradesBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-600">Error: Could not connect to API.</td></tr>`;
+            }
+        })();
+    });
+
+    // Calculate and update performance snapshot UI
+    function updateSnapshot(rows, creditsRequired = 120) {
+        // rows: array of enrollment DTOs; we support variations in field names
+        let totalPoints = 0;
+        let totalCreditsForGpa = 0;
+        let creditsEarned = 0;
+        let courseCount = 0;
+
+        for (const r of rows) {
+            const credits = Number(r.credits ?? r.courseCredits ?? r.course_credits ?? 0);
+            const grade = r.grade ?? null;
+            if (!isNaN(credits) && credits > 0) {
+                courseCount++;
+                // count credits earned for non-zero grade (assumption)
+                if (grade && grade !== 'N/A' && grade !== 'F' && grade !== '') {
+                    creditsEarned += credits;
+                }
+                const points = gradeToPoints(grade);
+                totalPoints += points * credits;
+                if (points > 0) totalCreditsForGpa += credits;
+            }
+        }
+
+        const gpa = totalCreditsForGpa > 0 ? (totalPoints / totalCreditsForGpa) : 0;
+        const gpaText = totalCreditsForGpa > 0 ? gpa.toFixed(2) : 'N/A';
+
+        document.getElementById('snapshot-gpa').textContent = gpaText;
+        document.getElementById('snapshot-credits').textContent = `${creditsEarned ?? 0}`;
+        document.getElementById('snapshot-courses').textContent = `${courseCount}`;
+
+        // degree completion as percentage of credits earned / required
+        const pct = creditsRequired > 0 ? Math.min(100, Math.round((creditsEarned / creditsRequired) * 100)) : 0;
+        const pctText = `${pct}% Complete`;
+        const progressEl = document.getElementById('degree-progress');
+        progressEl.style.setProperty('--progress-width', pct + '%');
+        progressEl.style.width = pct + '%';
+        document.getElementById('snapshot-degree').textContent = pctText;
+    }
+</script>
+</body>
+</html>
